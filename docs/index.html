@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta http-equiv="Permissions-Policy" content="interest-cohort=()">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>本地服务猎手 - 巴斯.zznQ</title>
+</head>
+
+<body>
+    <h1>Web TCP Port Scanner</h1>
+    <h2>
+        <img src="./hei.jpg">
+        <h3 id="port-state">
+        </h3>
+        <div id="port-res"></div>
+        <h3 id="fuzz-state">
+        </h3>
+        <div id="fuzz-res"></div>
+    </h2>
+    <script>
+        function Scanner(host = "127.0.0.1", limit = 10) {
+            this.host = host;
+            this.limit = limit;
+            this.ports = [];
+
+            this.probe = (port) => {
+                return fetch(`http://${this.host}:${port}`,
+                    {
+                        method: 'HEAD',
+                        mode: 'no-cors',
+                    }).then(resp => {
+                        this.ports.push(port);
+                    }).catch(e => {
+                        const err = e.message;
+                        if (err.includes("exceeded while awaiting") ||
+                            err.includes("ssl") ||
+                            err.includes("cors") ||
+                            err.includes("invalid") ||
+                            err.includes("protocol")) this.ports.push(port);;
+                        try {/*do nothing*/ } catch (e) { }
+                    });
+            };
+            this.scan = async (start, end) => {
+                const resultList = [];
+                const executing = [];
+                for (let port = start; port < end; port++) {
+                    const p = this.probe(port);
+                    resultList.push(p);
+                    if (this.limit <= end) {
+                        const e = p.then(() => {
+                            return executing.splice(executing.indexOf(e), 1);
+                        });
+                        executing.push(e);
+                        if (executing.length >= this.limit) {
+                            await Promise.race(executing);
+                        }
+                    }
+                }
+                return Promise.all(resultList);
+            }
+        };
+
+        function Fuzzer(addrs, limit = 10) {
+            this.addrs = addrs;
+            this.limit = limit;
+            this.reports = [];
+
+            this.probe = (addr) => {
+                const url = `http://${addr}`;
+                return fetch(url, {
+                    method: 'Get',
+                }).then(resp => {
+                    this.reports.push({ status: resp.status, url: url });
+                }).catch(e => {
+                    try {/*do nothing*/ } catch (e) { }
+                });
+            };
+            this.scan = async () => {
+                const resultList = [];
+                const executing = [];
+
+                for (const addr of this.addrs) {
+                    const p = this.probe(addr);
+                    resultList.push(p);
+                    if (this.limit <= this.addrs.length) {
+                        const e = p.then(() => {
+                            return executing.splice(executing.indexOf(e), 1);
+                        });
+                        executing.push(e);
+                        if (executing.length >= this.limit) {
+                            await Promise.race(executing);
+                        }
+                    }
+                }
+                return Promise.all(resultList);
+            }
+        }
+
+
+        s = new Scanner();
+        const addrs = [];
+        const pstate = document.getElementById("port-state");
+        const pres = document.getElementById("port-res");
+
+        pstate.innerText = "Scanning Ports...";
+        s.scan(8000, 8100).then(() => {
+            pstate.innerText = "Opened Port:";
+
+            s.ports.forEach(port => {
+                addrs.push(`${s.host}:${port}`)
+
+                let p = document.createElement("li");
+                p.innerText = port;
+                pres.appendChild(p);
+            });
+
+            f = new Fuzzer(addrs);
+            const fstate = document.getElementById("fuzz-state");
+            const fres = document.getElementById("fuzz-res");
+            fstate.innerText = "Fuzzing ...";
+            f.scan().then(() => {
+                fstate.innerText = "Fuzz report:";
+
+                f.reports.forEach(res => {
+                    let p = document.createElement("li");
+                    p.innerText = `url: ${res.url} -- status: ${res.status}`;
+                    fres.appendChild(p);
+                });
+            });
+        });
+    </script>
+</body>
+
+</html>
