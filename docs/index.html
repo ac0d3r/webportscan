@@ -106,7 +106,7 @@
         const pres = document.getElementById("port-res");
 
         pstate.innerText = "Scanning Ports...";
-        s.scan(8000, 8100).then(() => {
+        s.scan(1, 65535).then(() => {
             pstate.innerText = "Opened Port:";
 
             s.ports.forEach(port => {
