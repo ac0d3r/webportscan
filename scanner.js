@@ -39,12 +39,11 @@ function Scanner(host = "127.0.0.1", limit = 10) {
     }
 }
 s = new Scanner();
-s.scan(8000, 8100).then(() => {
+s.scan(1, 65535).then(() => {
     s.ports.forEach(item => {
         console.log("Opened Port:", item);
     });
 });
-
 
 
 function Fuzzer(addrs, limit = 10) {
@@ -84,20 +83,15 @@ function Fuzzer(addrs, limit = 10) {
 }
 
 f = new Fuzzer([
-    "127.0.0.1:80",
     "127.0.0.1:5000",
     "127.0.0.1:7000",
     "127.0.0.1:7890",
     "127.0.0.1:8233",
-    "127.0.0.1:8440",
-    "127.0.0.1:8830",
-    "127.0.0.1:8831",
-    "127.0.0.1:8829",
-    "127.0.0.1:61750",
+    "127.0.0.1:8828",
 ]);
 
 f.scan().then(() => {
     f.reports.forEach(item => {
-        console.log("Opened Port:", item);
+        console.log("report:", item);
     });
 });
