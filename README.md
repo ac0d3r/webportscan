@@ -1,6 +1,9 @@
 # webportscan
 Local Service ports scan
 
+### Using GO WASM
+- https://github.com/ac0d3r/portsscan
+
 **Research articles:**
 
 - [Local Service Hunter（图一乐研究之本地服务猎手）](https://blog.macoder.tech/e173de9e6dfd425caad0fb2a8737c24e)
