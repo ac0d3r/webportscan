@@ -10,8 +10,10 @@ function Scanner(host = "127.0.0.1", limit = 10) {
         }).then(resp => {
             this.ports.push(port);
         }).catch(e => {
-            const err = e.message;
-            if (err.includes("exceeded while awaiting") ||
+            const err = e.message.toLowerCase();
+            if (err.includes("sent an invalid response") ||
+                err.includes("ERR_SSL_PROTOCOL_ERROR".toLowerCase()) ||
+                err.includes("exceeded while awaiting") ||
                 err.includes("ssl") ||
                 err.includes("cors") ||
                 err.includes("invalid") ||
